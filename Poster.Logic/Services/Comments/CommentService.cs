@@ -1,9 +1,10 @@
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Poster.Logic.Services.Comments.Dtos;
 using Poster.Domain.Entities;
 using Poster.Logic.Common.Exceptions.Api;
 using Poster.Logic.Common.UserAccessor;
+using Poster.Logic.Common.Validators;
 
 namespace Poster.Logic.Services.Comments;
 
@@ -11,11 +12,13 @@ public class CommentService : ICommentService
 {
     private readonly IAppDbContext _dbContext;
     private readonly IUserAccessor _userAccessor;
+    private readonly UserManager<AppUser> _userManager;
 
-    public CommentService(IAppDbContext dbContext, IUserAccessor userAccessor)
+    public CommentService(IAppDbContext dbContext, IUserAccessor userAccessor, UserManager<AppUser> userManager)
     {
         _dbContext = dbContext;
         _userAccessor = userAccessor;
+        _userManager = userManager;
     }
 
     public async Task<List<GetCommentDto>> GetComments()
@@ -33,6 +36,11 @@ public class CommentService : ICommentService
 
     public async Task<List<GetCommentDto>> GetCommentsByPost(int postId)
     {
+        if (!CommentValidator.IsValidId(postId))
+        {
+            throw new CustomException();
+        }
+        
         return await _dbContext.Comments
             .Where(comment => comment.PostId == postId)
             .Select(comment => new GetCommentDto 
@@ -48,10 +56,25 @@ public class CommentService : ICommentService
 
     public async Task<int> CreateComment(CreateCommentDto createCommentDto)
     {
+        if (!CommentValidator.IsValidCommentBody(createCommentDto.Text))
+        {
+            throw new CustomException();
+        }
+
+        var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == createCommentDto.PostId);
+        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == _userAccessor.UserId);
+
+        if (post == null || user == null)
+        {
+            throw new CustomException();
+        }
+        
         var comment = new Comment
         {
-            PostId = createCommentDto.PostId,
-            UserId = _userAccessor.UserId,
+            PostId = post.Id,
+            Post = post,
+            UserId = user.Id,
+            User = user,
             Text = createCommentDto.Text,
             CreationDate = DateTime.Now
         };
@@ -64,6 +87,12 @@ public class CommentService : ICommentService
 
     public async Task EditComment(EditCommentDto editCommentDto)
     {
+        if (!(CommentValidator.IsValidCommentBody(editCommentDto.Text)
+            && CommentValidator.IsValidId(editCommentDto.Id)))
+        {
+            throw new CustomException();
+        }
+        
         var comment = await _dbContext.Comments.FirstOrDefaultAsync(comment => comment.Id == editCommentDto.Id);
 
         if (comment == null || _userAccessor.UserId != comment.UserId)
@@ -78,6 +107,11 @@ public class CommentService : ICommentService
 
     public async Task DeleteComment(DeleteCommentDto deleteCommentDto)
     {
+        if (!CommentValidator.IsValidId(deleteCommentDto.CommentId))
+        {
+            throw new CustomException();
+        }
+        
         var comment = await _dbContext.Comments.FirstOrDefaultAsync(comment => comment.Id == deleteCommentDto.CommentId);
 
         if (comment == null || _userAccessor.UserId != comment.UserId)

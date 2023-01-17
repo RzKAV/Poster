@@ -20,16 +20,11 @@ builder.Services.AddTransient<IUserAccessor, UserAccessor>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
-//     {
-//         options.User.RequireUniqueEmail = true;
-//     }).AddEntityFrameworkStores<AppDbContext>()
-//     .AddDefaultTokenProviders();
-
-builder.Services.AddIdentityCore<AppUser>(options =>
+builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
     {
         options.User.RequireUniqueEmail = true;
-    }).AddEntityFrameworkStores<AppDbContext>()
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
 builder.Services.AddAuthentication(options =>

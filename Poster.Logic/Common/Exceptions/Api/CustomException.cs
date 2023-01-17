@@ -4,7 +4,7 @@ namespace Poster.Logic.Common.Exceptions.Api;
 
 public class CustomException : BaseException
 {
-    public CustomException() : base("Not found, come later")
+    public CustomException() : base("Something went wrong")
     {
         Failures = new Dictionary<string, string[]>();
     }

@@ -15,13 +15,11 @@ namespace Poster.Logic.Services.Account;
 internal class AccountService : IAccountService
 {
     private readonly UserManager<AppUser> _userManager;
+    
 
-    private readonly IAppDbContext _dbContext;
-
-    public AccountService(UserManager<AppUser> userManager, IAppDbContext dbContext)
+    public AccountService(UserManager<AppUser> userManager)
     {
         _userManager = userManager;
-        _dbContext = dbContext;
     }
 
     public async Task<List<UserDto>> GetUsers()
@@ -29,7 +27,8 @@ internal class AccountService : IAccountService
         return await _userManager.Users.Select(user => new UserDto
         {
             UserId = user.Id,
-            UserName = user.UserName
+            UserName = user.UserName,
+            Email = user.Email
         }).ToListAsync();
     }
 
@@ -76,17 +75,12 @@ internal class AccountService : IAccountService
 
     public async Task<int> Register(RegisterDto registerDto)
     {
-        if (!UserNameValidator.IsValidUserName(registerDto.UserName))
-        {
-            throw new CustomException();
-        }
-        
-        if (!EmailValidator.IsValidEmail(registerDto.Email))
+        if (!(UserNameValidator.IsValidUserName(registerDto.UserName)
+              &&EmailValidator.IsValidEmail(registerDto.Email)))
         {
             throw new CustomException();
         }
 
-        
         var user = new AppUser
         {
             UserName = registerDto.UserName,
@@ -97,17 +91,17 @@ internal class AccountService : IAccountService
 
         if (!createResult.Succeeded)
         {
-            return -1;
+            throw new CustomException();
         }
         
-        var roleResult = await _userManager.AddToRoleAsync(user, "user");
-        
-        if (!roleResult.Succeeded)
-        {
-            await _userManager.DeleteAsync(user);
-
-            return -2;
-        }
+        // var roleResult = await _userManager.AddToRoleAsync(user, "user");
+        //
+        // if (!roleResult.Succeeded)
+        // {
+        //     await _userManager.DeleteAsync(user);
+        //
+        //     throw new CustomException();
+        // }
 
         return user.Id;
     }
