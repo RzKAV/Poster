@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Poster.Logic.Services.Account;
+using Poster.Logic.Services.Account.Dtos;
 
 namespace Poster.Controllers;
 

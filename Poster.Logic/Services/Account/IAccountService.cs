@@ -1,3 +1,5 @@
+using Poster.Logic.Services.Account.Dtos;
+
 namespace Poster.Logic.Services.Account;
 
 public interface IAccountService

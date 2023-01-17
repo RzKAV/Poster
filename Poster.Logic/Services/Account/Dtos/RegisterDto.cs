@@ -1,4 +1,4 @@
-namespace Poster.Logic.Services.Account;
+namespace Poster.Logic.Services.Account.Dtos;
 
 public class RegisterDto
 {

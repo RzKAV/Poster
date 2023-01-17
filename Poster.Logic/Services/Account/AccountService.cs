@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Poster.Domain.Entities;
 using Poster.Logic.Common.Exceptions.Api;
 using Poster.Logic.Common.Validators;
+using Poster.Logic.Services.Account.Dtos;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Poster.Logic.Services.Account;
