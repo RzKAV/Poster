@@ -1,6 +1,6 @@
 # simple asp.net core app to do posts and comments
-## usings:  
+### usings:  
     ASP.NET Core 7
     EFCore 7
     MySql
-    Authentifications and authorization with jwt tokens, but now without refresh tokens, soon I will add this posibility
+    Auth with jwt tokens without refresh token, soon I will add this posibility
