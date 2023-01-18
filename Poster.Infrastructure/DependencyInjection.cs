@@ -11,7 +11,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         services.AddDbContext<MSSQLAppDbContext>(options =>
-            options.UseMySql(configuration.GetConnectionString("MySql"), new MySqlServerVersion("8.0.31")));
+            options.UseSqlServer(configuration.GetConnectionString("MSSQL")));
 
         services.AddScoped<AppDbContext>(provider => provider.GetService<MSSQLAppDbContext>()!);
 

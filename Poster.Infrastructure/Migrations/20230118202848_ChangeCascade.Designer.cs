@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Poster.Infrastructure;
 
@@ -11,9 +12,11 @@ using Poster.Infrastructure;
 namespace Poster.Infrastructure.Migrations
 {
     [DbContext(typeof(MSSQLAppDbContext))]
-    partial class MSSQLAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230118202848_ChangeCascade")]
+    partial class ChangeCascade
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

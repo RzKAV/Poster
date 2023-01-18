@@ -9,5 +9,10 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
     public void Configure(EntityTypeBuilder<AppUser> builder)
     {
         builder.Property(user => user.UserName).IsRequired();
+        
+        builder
+            .HasMany(user => user.Posts)
+            .WithOne(post => post.User)
+            .HasForeignKey(post => post.UserId);
     }
 }
