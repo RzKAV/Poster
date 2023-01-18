@@ -8,11 +8,11 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
 {
     public void Configure(EntityTypeBuilder<Comment> builder)
     {
-        builder.Property(z => z.Text).IsRequired();
-        
+        builder.Property(comment => comment.Text).IsRequired();
+
         builder
-            .HasOne(z => z.Post)
-            .WithMany(x => x.Comments)
-            .HasForeignKey(z => z.PostId);
+            .HasOne(comment => comment.Post)
+            .WithMany(post => post.Comments)
+            .HasForeignKey(comment => comment.PostId);
     }
 }

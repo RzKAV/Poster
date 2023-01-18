@@ -7,7 +7,7 @@ public static class CommentValidator
         return !string.IsNullOrWhiteSpace(text)
                && text.Length <= 256;
     }
-    
+
     public static bool IsValidId(int id)
     {
         return id >= 0;

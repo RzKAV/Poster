@@ -10,7 +10,7 @@ public class Post
     public string Text { get; set; }
 
     public List<Comment> Comments { get; set; }
-    
+
     public DateTime CreationDate { get; set; }
 
     public DateTime? EditDate { get; set; }

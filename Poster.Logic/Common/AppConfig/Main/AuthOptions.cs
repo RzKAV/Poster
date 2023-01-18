@@ -17,12 +17,9 @@ public record AuthOptions
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(SecretKey))
-            {
-                throw new NullReferenceException(nameof(SecretKey));
-            }
+            if (string.IsNullOrWhiteSpace(SecretKey)) throw new NullReferenceException(nameof(SecretKey));
 
             return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecretKey));
         }
     }
-};
+}

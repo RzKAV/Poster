@@ -7,7 +7,7 @@ public static class PostValidator
         return !string.IsNullOrWhiteSpace(text)
                && text.Length <= 512;
     }
-    
+
     public static bool IsValidId(int id)
     {
         return id >= 0;

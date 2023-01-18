@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Poster.Domain.Entities;
 using Poster.Logic.Common.Exceptions.Api;
@@ -10,10 +9,10 @@ namespace Poster.Logic.Services.Posts;
 
 public class PostsService : IPostsService
 {
-    private readonly IAppDbContext _dbContext;
+    private readonly AppDbContext _dbContext;
     private readonly IUserAccessor _userAccessor;
 
-    public PostsService(IAppDbContext dbContext, IUserAccessor userAccessor)
+    public PostsService(AppDbContext dbContext, IUserAccessor userAccessor)
     {
         _dbContext = dbContext;
         _userAccessor = userAccessor;
@@ -33,17 +32,11 @@ public class PostsService : IPostsService
 
     public async Task<GetPostDto?> GetPostById(int postId)
     {
-        if (!PostValidator.IsValidId(postId))
-        {
-            throw new CustomException();
-        }
-        
+        if (!PostValidator.IsValidId(postId)) throw new CustomException();
+
         var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == postId);
 
-        if (post == null)
-        {
-            throw new CustomException();
-        }
+        if (post == null) throw new CustomException();
 
         return new GetPostDto
         {
@@ -59,7 +52,7 @@ public class PostsService : IPostsService
     {
         return await _dbContext.Posts
             .Where(post => post.UserId == _userAccessor.UserId)
-            .Select(post => new GetPostDto()
+            .Select(post => new GetPostDto
             {
                 Id = post.Id,
                 UserId = post.UserId,
@@ -71,11 +64,8 @@ public class PostsService : IPostsService
 
     public async Task<int> CreatePost(CreatePostDto postDto)
     {
-        if (!PostValidator.IsValidPostBody(postDto.Text))
-        {
-            throw new CustomException();
-        }
-        
+        if (!PostValidator.IsValidPostBody(postDto.Text)) throw new CustomException();
+
         var post = new Post
         {
             UserId = _userAccessor.UserId,
@@ -91,23 +81,14 @@ public class PostsService : IPostsService
 
     public async Task EditPost(EditPostDto editPostDto)
     {
-        if (!PostValidator.IsValidId(editPostDto.PostId))
-        {
-            throw new CustomException();
-        }
-        
-        if (!PostValidator.IsValidPostBody(editPostDto.Text))
-        {
-            throw new CustomException();
-        }
-        
+        if (!PostValidator.IsValidId(editPostDto.PostId)) throw new CustomException();
+
+        if (!PostValidator.IsValidPostBody(editPostDto.Text)) throw new CustomException();
+
         var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == editPostDto.PostId);
 
         if (post == null || post.UserId != _userAccessor.UserId)
-        {
-            
             throw new CustomException(errors: "Post not found or this is not your post :)");
-        }
 
         post.Text = editPostDto.Text;
         post.EditDate = DateTime.Now;
@@ -117,18 +98,12 @@ public class PostsService : IPostsService
 
     public async Task DeletePost(DeletePostDto deletePostDto)
     {
-        if (!PostValidator.IsValidId(deletePostDto.PostId))
-        {
-            throw new CustomException();
-        }
-        
+        if (!PostValidator.IsValidId(deletePostDto.PostId)) throw new CustomException();
+
         var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == deletePostDto.PostId);
 
-        if (post == null || post.UserId != _userAccessor.UserId)
-        {
-            throw new CustomException();
-        }
-        
+        if (post == null || post.UserId != _userAccessor.UserId) throw new CustomException();
+
         _dbContext.Posts.Remove(post);
         await _dbContext.SaveChangesAsync();
     }

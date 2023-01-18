@@ -5,9 +5,9 @@ namespace Poster.Logic.Services.Posts;
 public interface IPostsService
 {
     public Task<List<GetPostDto>> GetPosts();
-    
+
     public Task<GetPostDto?> GetPostById(int postId);
-    
+
     public Task<List<GetPostDto>?> GetPostsByUserId();
 
     public Task<int> CreatePost(CreatePostDto createPostDto);

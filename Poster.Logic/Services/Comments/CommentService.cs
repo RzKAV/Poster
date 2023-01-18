@@ -1,20 +1,20 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Poster.Logic.Services.Comments.Dtos;
 using Poster.Domain.Entities;
 using Poster.Logic.Common.Exceptions.Api;
 using Poster.Logic.Common.UserAccessor;
 using Poster.Logic.Common.Validators;
+using Poster.Logic.Services.Comments.Dtos;
 
 namespace Poster.Logic.Services.Comments;
 
 public class CommentService : ICommentService
 {
-    private readonly IAppDbContext _dbContext;
+    private readonly AppDbContext _dbContext;
     private readonly IUserAccessor _userAccessor;
     private readonly UserManager<AppUser> _userManager;
 
-    public CommentService(IAppDbContext dbContext, IUserAccessor userAccessor, UserManager<AppUser> userManager)
+    public CommentService(AppDbContext dbContext, IUserAccessor userAccessor, UserManager<AppUser> userManager)
     {
         _dbContext = dbContext;
         _userAccessor = userAccessor;
@@ -36,14 +36,11 @@ public class CommentService : ICommentService
 
     public async Task<List<GetCommentDto>> GetCommentsByPost(int postId)
     {
-        if (!CommentValidator.IsValidId(postId))
-        {
-            throw new CustomException();
-        }
-        
+        if (!CommentValidator.IsValidId(postId)) throw new CustomException();
+
         return await _dbContext.Comments
             .Where(comment => comment.PostId == postId)
-            .Select(comment => new GetCommentDto 
+            .Select(comment => new GetCommentDto
             {
                 Id = comment.Id,
                 UserId = comment.UserId,
@@ -56,19 +53,13 @@ public class CommentService : ICommentService
 
     public async Task<int> CreateComment(CreateCommentDto createCommentDto)
     {
-        if (!CommentValidator.IsValidCommentBody(createCommentDto.Text))
-        {
-            throw new CustomException();
-        }
+        if (!CommentValidator.IsValidCommentBody(createCommentDto.Text)) throw new CustomException();
 
         var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == createCommentDto.PostId);
         var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == _userAccessor.UserId);
 
-        if (post == null || user == null)
-        {
-            throw new CustomException();
-        }
-        
+        if (post == null || user == null) throw new CustomException();
+
         var comment = new Comment
         {
             PostId = post.Id,
@@ -88,17 +79,12 @@ public class CommentService : ICommentService
     public async Task EditComment(EditCommentDto editCommentDto)
     {
         if (!(CommentValidator.IsValidCommentBody(editCommentDto.Text)
-            && CommentValidator.IsValidId(editCommentDto.Id)))
-        {
+              && CommentValidator.IsValidId(editCommentDto.Id)))
             throw new CustomException();
-        }
-        
+
         var comment = await _dbContext.Comments.FirstOrDefaultAsync(comment => comment.Id == editCommentDto.Id);
 
-        if (comment == null || _userAccessor.UserId != comment.UserId)
-        {
-            throw new CustomException();
-        }
+        if (comment == null || _userAccessor.UserId != comment.UserId) throw new CustomException();
 
         comment.Text = editCommentDto.Text;
         comment.EditDate = DateTime.Now;
@@ -107,17 +93,12 @@ public class CommentService : ICommentService
 
     public async Task DeleteComment(DeleteCommentDto deleteCommentDto)
     {
-        if (!CommentValidator.IsValidId(deleteCommentDto.CommentId))
-        {
-            throw new CustomException();
-        }
-        
-        var comment = await _dbContext.Comments.FirstOrDefaultAsync(comment => comment.Id == deleteCommentDto.CommentId);
+        if (!CommentValidator.IsValidId(deleteCommentDto.CommentId)) throw new CustomException();
 
-        if (comment == null || _userAccessor.UserId != comment.UserId)
-        {
-            throw new CustomException();
-        }
+        var comment =
+            await _dbContext.Comments.FirstOrDefaultAsync(comment => comment.Id == deleteCommentDto.CommentId);
+
+        if (comment == null || _userAccessor.UserId != comment.UserId) throw new CustomException();
 
         _dbContext.Comments.Remove(comment);
         await _dbContext.SaveChangesAsync();

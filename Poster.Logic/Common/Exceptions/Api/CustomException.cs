@@ -8,14 +8,11 @@ public class CustomException : BaseException
     {
         Failures = new Dictionary<string, string[]>();
     }
-    
+
     public CustomException(params string[]? errors) : this()
     {
-        if (errors != null)
-        {
-            Failures.Add(String.Empty, errors);
-        }
+        if (errors != null) Failures.Add(string.Empty, errors);
     }
 
-    public IDictionary<string, string[]> Failures { get;}
+    public IDictionary<string, string[]> Failures { get; }
 }

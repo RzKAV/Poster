@@ -13,20 +13,21 @@ public class AccountController : ControllerBase
     {
         _accountService = accountService;
     }
+
     [HttpGet("GetUsers")]
     public async Task<IActionResult> GetUsers()
     {
         var result = await _accountService.GetUsers();
         return Ok(result);
     }
-    
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
         var result = await _accountService.Register(registerDto);
         return Ok(result);
     }
-    
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {

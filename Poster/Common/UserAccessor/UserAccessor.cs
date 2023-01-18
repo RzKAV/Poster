@@ -14,6 +14,4 @@ public class UserAccessor : IUserAccessor
 
     public ClaimsPrincipal User => _contextAccessor.HttpContext.User;
     public int UserId => int.Parse(User.Identity.Name);
-    public string Host => 
-        @$"{_contextAccessor.HttpContext.Request.Scheme}://{_contextAccessor.HttpContext.Request.Host.Value}";
 }

@@ -15,7 +15,6 @@ namespace Poster.Logic.Services.Account;
 internal class AccountService : IAccountService
 {
     private readonly UserManager<AppUser> _userManager;
-    
 
     public AccountService(UserManager<AppUser> userManager)
     {
@@ -34,24 +33,19 @@ internal class AccountService : IAccountService
 
     public async Task<string> Login(LoginDto loginDto)
     {
-        if (!UserNameValidator.IsValidUserName(loginDto.UserName))
-        {
-            throw new CustomException();
-        }
-        
+        if (!UserNameValidator.IsValidUserName(loginDto.UserName)) throw new CustomException();
+
         var user = await _userManager.FindByNameAsync(loginDto.UserName);
 
         if (user == null ||
             !await _userManager.CheckPasswordAsync(user, loginDto.Password))
-        {
             throw new CustomException();
-        }
-        
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.Name, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email)
+            new(JwtRegisteredClaimNames.Sub, user.UserName),
+            new(JwtRegisteredClaimNames.Email, user.Email)
         };
 
         var secretBytes = Encoding.UTF8.GetBytes("Super_mega_secret_key");
@@ -61,12 +55,12 @@ internal class AccountService : IAccountService
         var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: "localhost:5001",
-            audience: "localhost:5001",
-            claims: claims,
-            notBefore: DateTime.Now,
-            expires: DateTime.Now.AddMinutes(30),
-            signingCredentials: signingCredentials);
+            "localhost:5001",
+            "localhost:5001",
+            claims,
+            DateTime.Now,
+            DateTime.Now.AddMinutes(30),
+            signingCredentials);
 
         var value = new JwtSecurityTokenHandler().WriteToken(token);
 
@@ -76,10 +70,8 @@ internal class AccountService : IAccountService
     public async Task<int> Register(RegisterDto registerDto)
     {
         if (!(UserNameValidator.IsValidUserName(registerDto.UserName)
-              &&EmailValidator.IsValidEmail(registerDto.Email)))
-        {
+              && EmailValidator.IsValidEmail(registerDto.Email)))
             throw new CustomException();
-        }
 
         var user = new AppUser
         {
@@ -89,19 +81,16 @@ internal class AccountService : IAccountService
 
         var createResult = await _userManager.CreateAsync(user, registerDto.Password);
 
-        if (!createResult.Succeeded)
+        if (!createResult.Succeeded) throw new CustomException();
+
+        var roleResult = await _userManager.AddToRoleAsync(user, "user");
+
+        if (!roleResult.Succeeded)
         {
+            await _userManager.DeleteAsync(user);
+
             throw new CustomException();
         }
-        
-        // var roleResult = await _userManager.AddToRoleAsync(user, "user");
-        //
-        // if (!roleResult.Succeeded)
-        // {
-        //     await _userManager.DeleteAsync(user);
-        //
-        //     throw new CustomException();
-        // }
 
         return user.Id;
     }

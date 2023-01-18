@@ -8,6 +8,6 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
 {
     public void Configure(EntityTypeBuilder<AppUser> builder)
     {
-        builder.Property(z => z.UserName).IsRequired();
+        builder.Property(user => user.UserName).IsRequired();
     }
 }
