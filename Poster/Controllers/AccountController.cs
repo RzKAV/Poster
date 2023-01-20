@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Poster.Logic.Services.Account;
 using Poster.Logic.Services.Account.Dtos;
@@ -14,7 +15,8 @@ public class AccountController : ControllerBase
         _accountService = accountService;
     }
 
-    [HttpGet("GetUsers")]
+    [HttpGet("getUsers")]
+    [Authorize]
     public async Task<IActionResult> GetUsers()
     {
         var result = await _accountService.GetUsers();

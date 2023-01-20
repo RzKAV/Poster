@@ -16,7 +16,7 @@ public class PostsController : ControllerBase
         _postsService = postsService;
     }
 
-    [HttpGet("all")]
+    [HttpGet]
     public async Task<IActionResult> GetPosts()
     {
         var result = await _postsService.GetPosts();
@@ -33,7 +33,7 @@ public class PostsController : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("myposts")]
+    [HttpGet("my")]
     public async Task<IActionResult> GetPostsByUserId()
     {
         var result = await _postsService.GetPostsByUserId();
@@ -42,7 +42,7 @@ public class PostsController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("add")]
+    [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreatePostDto createPostDto)
     {
         var result = await _postsService.CreatePost(createPostDto);
@@ -51,7 +51,7 @@ public class PostsController : ControllerBase
     }
 
     [Authorize]
-    [HttpPut("edit")]
+    [HttpPut]
     public async Task<IActionResult> EditPost([FromBody] EditPostDto editPostDto)
     {
         await _postsService.EditPost(editPostDto);
@@ -60,8 +60,8 @@ public class PostsController : ControllerBase
     }
 
     [Authorize]
-    [HttpDelete("delete")]
-    public async Task<IActionResult> Create([FromBody] DeletePostDto deletePostDto)
+    [HttpDelete]
+    public async Task<IActionResult> Delete([FromBody] DeletePostDto deletePostDto)
     {
         await _postsService.DeletePost(deletePostDto);
 

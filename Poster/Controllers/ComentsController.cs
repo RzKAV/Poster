@@ -16,7 +16,7 @@ public class CommentsController : ControllerBase
         _commentService = commentService;
     }
 
-    [HttpGet("all")]
+    [HttpGet]
     public async Task<IActionResult> GetComments()
     {
         var result = await _commentService.GetComments();
@@ -33,7 +33,7 @@ public class CommentsController : ControllerBase
     }
 
     [Authorize]
-    [HttpPost("add")]
+    [HttpPost]
     public async Task<IActionResult> CreateComment(CreateCommentDto createCommentDto)
     {
         var result = await _commentService.CreateComment(createCommentDto);
@@ -42,7 +42,7 @@ public class CommentsController : ControllerBase
     }
 
     [Authorize]
-    [HttpPut("edit")]
+    [HttpPut]
     public async Task<IActionResult> EditComment(EditCommentDto editCommentDto)
     {
         await _commentService.EditComment(editCommentDto);
@@ -51,7 +51,7 @@ public class CommentsController : ControllerBase
     }
 
     [Authorize]
-    [HttpDelete("delete")]
+    [HttpDelete]
     public async Task<IActionResult> DeleteComment(DeleteCommentDto deleteCommentDto)
     {
         await _commentService.DeleteComment(deleteCommentDto);
