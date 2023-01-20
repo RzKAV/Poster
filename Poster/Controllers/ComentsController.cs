@@ -24,7 +24,7 @@ public class CommentsController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("postId/{postId:int}")]
+    [HttpGet("{postId:int}")]
     public async Task<IActionResult> GetCommentsByPostId(int postId)
     {
         var result = await _commentService.GetCommentsByPost(postId);
