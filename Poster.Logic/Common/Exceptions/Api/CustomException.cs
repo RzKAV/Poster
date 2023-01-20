@@ -11,7 +11,10 @@ public class CustomException : BaseException
 
     public CustomException(params string[]? errors) : this()
     {
-        if (errors != null) Failures.Add(string.Empty, errors);
+        if (errors != null)
+        {
+            Failures.Add(string.Empty, errors);
+        }
     }
 
     public IDictionary<string, string[]> Failures { get; }

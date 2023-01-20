@@ -9,7 +9,7 @@ internal class MSSQLAppDbContext : AppDbContext
     public MSSQLAppDbContext(DbContextOptions<MSSQLAppDbContext> options) : base(options)
     {
     }
-    
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

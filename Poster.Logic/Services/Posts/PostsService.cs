@@ -30,13 +30,19 @@ public class PostsService : IPostsService
         }).ToListAsync();
     }
 
-    public async Task<GetPostDto?> GetPostById(int postId)
+    public async Task<GetPostDto> GetPostById(int postId)
     {
-        if (!PostValidator.IsValidId(postId)) throw new CustomException();
+        if (!PostValidator.IsValidId(postId))
+        {
+            throw new CustomException("invalid post id");
+        }
 
         var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == postId);
 
-        if (post == null) throw new CustomException();
+        if (post == null)
+        {
+            throw new CustomException("post not found");
+        }
 
         return new GetPostDto
         {
@@ -48,7 +54,7 @@ public class PostsService : IPostsService
         };
     }
 
-    public async Task<List<GetPostDto>?> GetPostsByUserId()
+    public async Task<List<GetPostDto>> GetPostsByUserId()
     {
         return await _dbContext.Posts
             .Where(post => post.UserId == _userAccessor.UserId)
@@ -64,7 +70,10 @@ public class PostsService : IPostsService
 
     public async Task<int> CreatePost(CreatePostDto postDto)
     {
-        if (!PostValidator.IsValidPostBody(postDto.Text)) throw new CustomException();
+        if (!PostValidator.IsValidPostBody(postDto.Text))
+        {
+            throw new CustomException("invalid post body");
+        }
 
         var post = new Post
         {
@@ -81,14 +90,18 @@ public class PostsService : IPostsService
 
     public async Task EditPost(EditPostDto editPostDto)
     {
-        if (!PostValidator.IsValidId(editPostDto.PostId)) throw new CustomException();
-
-        if (!PostValidator.IsValidPostBody(editPostDto.Text)) throw new CustomException();
+        if (!(PostValidator.IsValidId(editPostDto.PostId) ||
+              PostValidator.IsValidPostBody(editPostDto.Text)))
+        {
+            throw new CustomException("invalid postId or post body");
+        }
 
         var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == editPostDto.PostId);
 
         if (post == null || post.UserId != _userAccessor.UserId)
-            throw new CustomException(errors: "Post not found or this is not your post :)");
+        {
+            throw new CustomException(errors: "post not found or this is not your post");
+        }
 
         post.Text = editPostDto.Text;
         post.EditDate = DateTime.Now;
@@ -98,11 +111,17 @@ public class PostsService : IPostsService
 
     public async Task DeletePost(DeletePostDto deletePostDto)
     {
-        if (!PostValidator.IsValidId(deletePostDto.PostId)) throw new CustomException();
+        if (!PostValidator.IsValidId(deletePostDto.PostId))
+        {
+            throw new CustomException("invalid post id");
+        }
 
         var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == deletePostDto.PostId);
 
-        if (post == null || post.UserId != _userAccessor.UserId) throw new CustomException();
+        if (post == null || post.UserId != _userAccessor.UserId)
+        {
+            throw new CustomException("post not found or this is not your post");
+        }
 
         _dbContext.Posts.Remove(post);
         await _dbContext.SaveChangesAsync();

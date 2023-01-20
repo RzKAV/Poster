@@ -41,13 +41,19 @@ public class CustomExceptionHandlerMiddleware
         }
 
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)code;
+        context.Response.StatusCode = (int) code;
 
-        if (result.IsNullOrEmpty()) return Task.CompletedTask;
+        if (result.IsNullOrEmpty())
+        {
+            return Task.CompletedTask;
+        }
 
         var errors = new List<string>();
 
-        foreach (var error in result) errors.AddRange(error.Value);
+        foreach (var error in result)
+        {
+            errors.AddRange(error.Value);
+        }
 
         return context.Response.WriteAsync(JsonConvert.SerializeObject(errors));
     }

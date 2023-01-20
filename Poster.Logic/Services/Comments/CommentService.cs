@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Poster.Domain.Entities;
 using Poster.Logic.Common.Exceptions.Api;
@@ -12,13 +11,11 @@ public class CommentService : ICommentService
 {
     private readonly AppDbContext _dbContext;
     private readonly IUserAccessor _userAccessor;
-    private readonly UserManager<AppUser> _userManager;
 
-    public CommentService(AppDbContext dbContext, IUserAccessor userAccessor, UserManager<AppUser> userManager)
+    public CommentService(AppDbContext dbContext, IUserAccessor userAccessor)
     {
         _dbContext = dbContext;
         _userAccessor = userAccessor;
-        _userManager = userManager;
     }
 
     public async Task<List<GetCommentDto>> GetComments()
@@ -36,7 +33,10 @@ public class CommentService : ICommentService
 
     public async Task<List<GetCommentDto>> GetCommentsByPost(int postId)
     {
-        if (!CommentValidator.IsValidId(postId)) throw new CustomException();
+        if (!CommentValidator.IsValidId(postId))
+        {
+            throw new CustomException("invalid post id");
+        }
 
         return await _dbContext.Comments
             .Where(comment => comment.PostId == postId)
@@ -53,19 +53,23 @@ public class CommentService : ICommentService
 
     public async Task<int> CreateComment(CreateCommentDto createCommentDto)
     {
-        if (!CommentValidator.IsValidCommentBody(createCommentDto.Text)) throw new CustomException();
+        if (!CommentValidator.IsValidCommentBody(createCommentDto.Text))
+        {
+            throw new CustomException("invalid post body");
+        }
 
-        var post = await _dbContext.Posts.FirstOrDefaultAsync(p => p.Id == createCommentDto.PostId);
-        var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == _userAccessor.UserId);
+        var postId = createCommentDto.PostId;
+        var isExistPost = await _dbContext.Posts.AnyAsync(p => p.Id == postId);
 
-        if (post == null || user == null) throw new CustomException();
+        if (!isExistPost)
+        {
+            throw new CustomException("post not found");
+        }
 
         var comment = new Comment
         {
-            PostId = post.Id,
-            Post = post,
-            UserId = user.Id,
-            User = user,
+            PostId = postId,
+            UserId = _userAccessor.UserId,
             Text = createCommentDto.Text,
             CreationDate = DateTime.Now
         };
@@ -80,11 +84,18 @@ public class CommentService : ICommentService
     {
         if (!(CommentValidator.IsValidCommentBody(editCommentDto.Text)
               && CommentValidator.IsValidId(editCommentDto.Id)))
-            throw new CustomException();
+        {
+            throw new CustomException("invalid comment id or body");
+        }
 
-        var comment = await _dbContext.Comments.FirstOrDefaultAsync(comment => comment.Id == editCommentDto.Id);
+        var comment =
+            await _dbContext.Comments.FirstOrDefaultAsync(
+                comment => comment.Id == editCommentDto.Id);
 
-        if (comment == null || _userAccessor.UserId != comment.UserId) throw new CustomException();
+        if (comment == null || _userAccessor.UserId != comment.UserId)
+        {
+            throw new CustomException("comment not found");
+        }
 
         comment.Text = editCommentDto.Text;
         comment.EditDate = DateTime.Now;
@@ -93,12 +104,19 @@ public class CommentService : ICommentService
 
     public async Task DeleteComment(DeleteCommentDto deleteCommentDto)
     {
-        if (!CommentValidator.IsValidId(deleteCommentDto.CommentId)) throw new CustomException();
+        if (!CommentValidator.IsValidId(deleteCommentDto.CommentId))
+        {
+            throw new CustomException("invalid comment id");
+        }
 
         var comment =
-            await _dbContext.Comments.FirstOrDefaultAsync(comment => comment.Id == deleteCommentDto.CommentId);
+            await _dbContext.Comments.FirstOrDefaultAsync(comment =>
+                comment.Id == deleteCommentDto.CommentId);
 
-        if (comment == null || _userAccessor.UserId != comment.UserId) throw new CustomException();
+        if (comment == null || _userAccessor.UserId != comment.UserId)
+        {
+            throw new CustomException("comment not found or this is not your comment");
+        }
 
         _dbContext.Comments.Remove(comment);
         await _dbContext.SaveChangesAsync();
