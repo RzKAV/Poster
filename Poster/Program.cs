@@ -1,4 +1,3 @@
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +6,7 @@ using Poster.Common.UserAccessor;
 using Poster.Domain.Entities;
 using Poster.Infrastructure;
 using Poster.Logic;
+using Poster.Logic.Common.AppConfig.Main;
 using Poster.Logic.Common.UserAccessor;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,34 +27,36 @@ builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddLogic(configuration);
+
+builder.Services.AddInfrastructure(configuration);
+
+var authOptions = configuration
+    .GetSection(nameof(AuthOptions))
+    .Get<AuthOptions>();
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme ,options =>
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("Super_mega_secret_key"));
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "localhost:5001",
+            ValidIssuer = authOptions.Issuer,
 
             ValidateAudience = true,
-            ValidAudience = "localhost:5001",
+            ValidAudience = authOptions.Audience,
 
             ValidateLifetime = true,
 
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = key,
+            IssuerSigningKey = authOptions.SymmetricSecurityKey
         };
     });
-
-builder.Services.AddLogic();
-
-builder.Services.AddInfrastructure(configuration);
 
 var app = builder.Build();
 

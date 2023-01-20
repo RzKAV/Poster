@@ -1,24 +1,24 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Poster.Domain.Consts;
 using Poster.Domain.Entities;
 using Poster.Logic.Common.Exceptions.Api;
 using Poster.Logic.Common.Validators;
 using Poster.Logic.Services.Account.Dtos;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
+using Poster.Logic.Services.Token;
 
 namespace Poster.Logic.Services.Account;
 
 internal class AccountService : IAccountService
 {
+    private readonly ITokenService _tokenService;
     private readonly UserManager<AppUser> _userManager;
 
-    public AccountService(UserManager<AppUser> userManager)
+    public AccountService(UserManager<AppUser> userManager,
+        ITokenService tokenService)
     {
         _userManager = userManager;
+        _tokenService = tokenService;
     }
 
     public async Task<List<UserDto>> GetUsers()
@@ -33,45 +33,29 @@ internal class AccountService : IAccountService
 
     public async Task<string> Login(LoginDto loginDto)
     {
-        if (!UserNameValidator.IsValidUserName(loginDto.UserName)) throw new CustomException();
+        if (!UserNameValidator.IsValidUserName(loginDto.UserName))
+        {
+            throw new CustomException("invalid userName");
+        }
 
         var user = await _userManager.FindByNameAsync(loginDto.UserName);
 
         if (user == null ||
             !await _userManager.CheckPasswordAsync(user, loginDto.Password))
-            throw new CustomException();
-
-        var claims = new List<Claim>
         {
-            new(ClaimTypes.Name, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Sub, user.UserName),
-            new(JwtRegisteredClaimNames.Email, user.Email)
-        };
+            throw new CustomException("incorrect user or password");
+        }
 
-        var secretBytes = Encoding.UTF8.GetBytes("Super_mega_secret_key");
-
-        var key = new SymmetricSecurityKey(secretBytes);
-
-        var signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            "localhost:5001",
-            "localhost:5001",
-            claims,
-            DateTime.Now,
-            DateTime.Now.AddMinutes(30),
-            signingCredentials);
-
-        var value = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return value;
+        return _tokenService.CreateAccessToken(user);
     }
 
     public async Task<int> Register(RegisterDto registerDto)
     {
         if (!(UserNameValidator.IsValidUserName(registerDto.UserName)
               && EmailValidator.IsValidEmail(registerDto.Email)))
-            throw new CustomException();
+        {
+            throw new CustomException("invalid username or email");
+        }
 
         var user = new AppUser
         {
@@ -81,15 +65,18 @@ internal class AccountService : IAccountService
 
         var createResult = await _userManager.CreateAsync(user, registerDto.Password);
 
-        if (!createResult.Succeeded) throw new CustomException();
+        if (!createResult.Succeeded)
+        {
+            throw new CustomException(createResult.Errors.Select(e => e.Description).ToArray());
+        }
 
-        var roleResult = await _userManager.AddToRoleAsync(user, "user");
+        var roleResult = await _userManager.AddToRoleAsync(user, Roles.User);
 
         if (!roleResult.Succeeded)
         {
             await _userManager.DeleteAsync(user);
 
-            throw new CustomException();
+            throw new Exception("Error adding role");
         }
 
         return user.Id;
