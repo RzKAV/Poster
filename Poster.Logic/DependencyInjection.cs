@@ -4,7 +4,7 @@ using Poster.Logic.Common.AppConfig.Configurations;
 using Poster.Logic.Services.Account;
 using Poster.Logic.Services.Comments;
 using Poster.Logic.Services.Posts;
-using Poster.Logic.Services.Token;
+using Poster.Logic.Services.Tokens;
 
 namespace Poster.Logic;
 

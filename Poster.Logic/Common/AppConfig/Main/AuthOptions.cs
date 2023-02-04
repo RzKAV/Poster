@@ -13,6 +13,8 @@ public record AuthOptions
 
     public int ExpireTimeTokenMinutes { get; set; }
 
+    public int ExpireTimeRefreshTokenDays { get; set; }
+
     public SymmetricSecurityKey SymmetricSecurityKey
     {
         get

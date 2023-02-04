@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Poster.Logic.Services.Account;
 using Poster.Logic.Services.Account.Dtos;
@@ -13,14 +12,6 @@ public class AccountController : ControllerBase
     public AccountController(IAccountService accountService)
     {
         _accountService = accountService;
-    }
-
-    [HttpGet("getUsers")]
-    [Authorize]
-    public async Task<IActionResult> GetUsers()
-    {
-        var result = await _accountService.GetUsers();
-        return Ok(result);
     }
 
     [HttpPost("register")]
