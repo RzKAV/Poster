@@ -3,4 +3,4 @@
     ASP.NET Core 7
     EF Core 7
     MS SQL
-    Auth with jwt tokens without refresh token, soon I will add this posibility
+    JWT Bearer auth with refresh token
